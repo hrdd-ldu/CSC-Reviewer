@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() { return request.auth != null; }
+    function isVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
+    function getProfile() { return get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data; }
+    function isAdmin() { return isVerified() && getProfile().isAdmin == true; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // --- Profiles ---
+    match /profiles/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && request.auth.uid == userId && 
+                    incoming().nickname is string &&
+                    (
+                      incoming().isAdmin == false || 
+                      request.auth.token.email == 'hrddldu@gmail.com'
+                    );
+      allow update: if isSignedIn() && request.auth.uid == userId &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['nickname', 'examsTaken', 'avgScore', 'bestScore', 'studyStreak', 'lastActiveAt']);
+      allow delete, update: if isAdmin();
+    }
+
+    // --- Study Guides ---
+    match /studyGuides/{guideId} {
+      allow read: if true; // Public access
+      allow write: if isAdmin();
+    }
+
+    // --- Flashcards ---
+    match /flashcardDecks/{deckId} {
+      allow read: if true; // Public access
+      allow write: if isAdmin();
+
+      match /cards/{cardId} {
+        allow read: if true; // Public access
+        allow write: if isAdmin();
+      }
+    }
+
+    // --- Exams ---
+    match /exams/{examId} {
+      allow read: if true; // Public access
+      allow write: if isAdmin();
+
+      match /questions/{questionId} {
+        allow read: if true; // Public access
+        allow write: if isAdmin();
+      }
+    }
+
+    // --- Exam Results ---
+    match /examResults/{resultId} {
+      allow read: if true; // Public for leaderboard
+      allow create: if true; // Guests can submit scores
+      allow update, delete: if isAdmin();
+    }
+  }
+}

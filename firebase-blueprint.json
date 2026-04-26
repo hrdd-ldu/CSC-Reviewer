@@ -1,0 +1,127 @@
+{
+  "entities": {
+    "Profile": {
+      "title": "User Profile",
+      "description": "Stores user display information and total stats.",
+      "type": "object",
+      "properties": {
+        "nickname": { "type": "string" },
+        "isAdmin": { "type": "boolean" },
+        "examsTaken": { "type": "number" },
+        "avgScore": { "type": "number" },
+        "bestScore": { "type": "number" },
+        "studyStreak": { "type": "number" },
+        "lastActiveAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nickname", "isAdmin"]
+    },
+    "StudyGuide": {
+      "title": "Study Guide",
+      "description": "Review materials like PDFs or text guides.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "contentUrl": { "type": "string" },
+        "category": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "category"]
+    },
+    "FlashcardDeck": {
+      "title": "Flashcard Deck",
+      "description": "A collection of flashcards for active recall.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "cardCount": { "type": "number" }
+      },
+      "required": ["title", "category"]
+    },
+    "Flashcard": {
+      "title": "Flashcard",
+      "description": "A single flashcard with front and back text.",
+      "type": "object",
+      "properties": {
+        "front": { "type": "string" },
+        "back": { "type": "string" },
+        "deckId": { "type": "string" }
+      },
+      "required": ["front", "back", "deckId"]
+    },
+    "Exam": {
+      "title": "Mock Exam",
+      "description": "A test that can be ranked or unranked.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "timeLimit": { "type": "number" },
+        "isRanked": { "type": "boolean" },
+        "category": { "type": "string" },
+        "questionCount": { "type": "number" }
+      },
+      "required": ["title", "isRanked", "category"]
+    },
+    "Question": {
+      "title": "Exam Question",
+      "description": "A multiple-choice question.",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "correctOption": { "type": "number" },
+        "examId": { "type": "string" }
+      },
+      "required": ["text", "options", "correctOption", "examId"]
+    },
+    "ExamResult": {
+      "title": "Exam Result",
+      "description": "A record of a completed exam for the leaderboard.",
+      "type": "object",
+      "properties": {
+        "nickname": { "type": "string" },
+        "userId": { "type": "string" },
+        "examId": { "type": "string" },
+        "examTitle": { "type": "string" },
+        "score": { "type": "number" },
+        "total": { "type": "number" },
+        "percentage": { "type": "number" },
+        "isRanked": { "type": "boolean" },
+        "completedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["nickname", "examId", "score", "total", "completedAt"]
+    }
+  },
+  "firestore": {
+    "profiles/{userId}": {
+      "schema": "Profile",
+      "description": "User profiles and settings."
+    },
+    "studyGuides/{guideId}": {
+      "schema": "StudyGuide",
+      "description": "Educational materials."
+    },
+    "flashcardDecks/{deckId}": {
+      "schema": "FlashcardDeck",
+      "description": "Decks of flashcards."
+    },
+    "flashcardDecks/{deckId}/cards/{cardId}": {
+      "schema": "Flashcard",
+      "description": "Individual flashcards within a deck."
+    },
+    "exams/{examId}": {
+      "schema": "Exam",
+      "description": "Mock exam configurations."
+    },
+    "exams/{examId}/questions/{questionId}": {
+      "schema": "Question",
+      "description": "Questions for a specific exam."
+    },
+    "examResults/{resultId}": {
+      "schema": "ExamResult",
+      "description": "Results of taken exams."
+    }
+  }
+}
